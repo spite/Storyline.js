@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<title>Storyline.js</title>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<head>
+	<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono' rel='stylesheet' type='text/css'>
+	<style>
+		*{box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto Condensed';}
+		body{overflow:hidden; padding: 20px; font-weight: 100; background-color: #dedede; font-size: 12px;}
+		#box{ width: 256px; height: 256px; background-color: #b70000; position: absolute; left: 50%; top: 50%; margin-left: -128px; margin-top: -128px;}
+		form{ margin-top: 1em;}
+		input[type="range"]{ margin: 0 1em;}
+		label{ padding: 0;}
+		.controls *{ float: left;}
+		#editPanel{ position: absolute; right: 0; top: 0; width: 300px; bottom: 0;  background-color: white; padding: 20px;}
+		#editPanel ul{ margin-left: 20px; margin-top: 1em;}
+		#storyboard{ position: absolute; left: 0; top: 140px; right: 0;width: 300px; bottom: 0; height: 100%; padding: 20px; border: none; outline: none; font-size: 12px; font-family: 'Ubuntu Mono', sans-serif;}
+	</style>
+</head>
+<body>
+
+	<h1>Storyline.js demo</h1>
+	<p>This is a demo of a storyboard that defines values in time that are applied to the CSS 2D transform of a div.</p>
+	<form>
+		<div class="controls">
+			<p>Animation playback speed:</p>
+			<input type="range" id="range" name="range" min="10" max="190"><label id="rangeLabel">1x</label>
+		</div>
+	</form>
+
+	<div id="box"></div>
+
+	<div id="editPanel">
+		<h1>Storyboard</h1>
+		<p>Try changing the values. You can use:</p>
+		<ul>
+			<li>[time] cut to [value]</li>
+			<li>[time] linear to [value]</li>
+			<li>[time] ease to [value]</li>
+		</ul>
+
+		<textarea id="storyboard"></textarea>
+
+	</div>
+
+	<a href="https://github.com/spite/Storyline.js"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
+
+	<script src="js/storyline.js"></script>
+
+	<script>
+
+		var box = document.getElementById( 'box' ),
+		rangeLabel = document.getElementById( 'rangeLabel' ),
+		storyboard = document.getElementById( 'storyboard' );
+
+		var storyline;
+
+		function fetchStoryboard() {
+
+			var oReq = new XMLHttpRequest();
+			oReq.onload = function() {
+				storyboard.value = this.responseText;
+				processStoryboard();
+				update();
+			};
+			oReq.open( 'get', 'js/storyboard.json', true);
+			oReq.send();
+
+		}
+
+		storyboard.addEventListener( 'keyup', processStoryboard );
+
+		function processStoryboard() {
+
+			try {
+				var json = storyboard.value.replace( /'/g, '"' );
+				storyline = STORYLINE.parseStoryline( JSON.parse( json ) );
+			} catch( e ) {
+				storyboard.style.backgroundColor = 'red';
+				return;
+			}
+			storyboard.style.backgroundColor = 'white';
+
+		}
+
+		storyboard.addEventListener( 'keydown', function( e ) {
+
+			var keyCode = e.keyCode || e.which;
+
+			if (keyCode == 9) {
+				e.preventDefault();
+				var start = this.selectionStart;
+				var end = this.selectionEnd;
+
+				this.value = this.value.substring(0, start) + "\t" + this.value.substring(end);
+
+				this.selectionStart =
+				this.selectionEnd = start + 1;
+			}
+
+		} );
+
+		var scale = 1;
+
+		var time = 0,
+		lastTime = Date.now();
+
+		function updateStory( t ) {
+
+			var modifiers = [
+			'translateX(' + storyline.get( 'x', t ) * 100 + 'px)',
+			'translateY(' + storyline.get( 'y', t ) * 100 + 'px)',
+			'rotate(' + storyline.get( 'angle', t ) + 'deg)',
+			'scale(' + storyline.get( 'scale', t ) + ')'
+			];
+
+			box.style.webkitTransform =
+			box.style.MozTransform =
+			box.style.msProperty =
+			box.style.OProperty =
+			box.style.transform = modifiers.join( ' ' );
+
+		}
+
+		document.getElementById( 'range' ).addEventListener( 'change', function( e ) {
+
+			scale = this.value / 100;
+			rangeLabel.textContent = scale + 'x';
+
+		} );
+
+		function update() {
+
+			requestAnimationFrame( update );
+
+			var t = Date.now();
+			time += scale * ( ( t - lastTime ) / 1000 );
+			updateStory( time % 10 );
+
+			lastTime = t;
+
+		}
+
+		fetchStoryboard();
+
+	</script>
+</body>
+</html>
+
+
