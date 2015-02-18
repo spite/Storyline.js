@@ -6,8 +6,6 @@ Check out the example to see it in action: [Storyline.js with CSS 2D transforms]
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/mQVU3Lb0D-w/0.jpg)](http://www.youtube.com/watch?v=mQVU3Lb0D-w)
 
-Forks, pull requests and code critiques are welcome!
-
 #### Using Storyline.js ####
 
 There's two parts: Storyline.js is the parser and player, and then a storyboard source object that defines the story. A storyline source has this format:
@@ -97,6 +95,20 @@ oReq.onload = function() {
 oReq.open( 'get', 'storyboard.json', true);
 oReq.send();
 ```
+
+### Status ####
+
+This is the first release. Next steps are to add syntax to control the easing functions, probably something like:
+
+```
+{time} ease to {value} { [ set of easing control points] }
+```
+
+Also, support specific functions to simplify animations:
+
+{time} {wiggle|shake} {extent}
+
+As always: forks, pull requests and code critiques are welcome!
 
 #### License ####
 
