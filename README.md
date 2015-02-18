@@ -106,7 +106,9 @@ This is the first release. Next steps are to add syntax to control the easing fu
 
 Also, support specific functions to simplify animations:
 
+```
 {time} {wiggle|shake} {extent}
+```
 
 As always: forks, pull requests and code critiques are welcome!
 
