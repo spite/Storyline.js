@@ -2,6 +2,8 @@
 
 **Storyline.js** is a library to help define a storyboard using natural language.
 
+This is the refined and polished version of the sytem created for [BEYOND](http://b-e-y-o-n-d.com/) and [cru·ci·form](http://www.clicktorelease.com/code/cruciform/).
+
 Check out the example to see it in action: [Storyline.js with CSS 2D transforms](http://www.clicktorelease.com/tools/storylinejs/).
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/mQVU3Lb0D-w/0.jpg)](http://www.youtube.com/watch?v=mQVU3Lb0D-w)
