@@ -21,8 +21,8 @@ There's two parts: Storyline.js is the parser and player, and then a storyboard 
     
     "value2": [
         "0 cut to 0",
-        "4 ease to 1",
-        "6 ease to 0"
+        "4 easeinout to 1",
+        "6 easeinout to 0"
     ]
 }
 ```
@@ -37,7 +37,11 @@ The actions are:
 
 - *cut to* instanteously changes to {value}
 - *linear to* will linearly interpolate from the last defined value to {value}
-- *ease to* will ease in-out from the last defined value to {value}
+- *easein to* will ease in from the last defined value to {value}
+- *easeout to* will ease out from the last defined value to {value}
+- *easeinout to* will ease in and out from the last defined value to {value}
+
+and you can register your own easing with the "registerEasing" method.
 
 #### Minimal example ####
 
@@ -54,8 +58,8 @@ var storyline = STORYLINE.parseStoryline( {
 
     "value1": [
         "0 cut to 0",
-        "5 ease to 1",
-        "10 ease to 0"
+        "5 easeinout to 1",
+        "10 easeinout to 0"
     ]
     
 } );
@@ -75,15 +79,15 @@ update();
 Simply export the storyline into its own file, and include it like a normal script.
 
 ```js
-var storyline = STORYLINE.parseStoryline( {
+var storyline = new Storyline({
 
     "value1": [
         "0 cut to 0",
-        "5 ease to 1",
-        "10 ease to 0"
+        "5 easeinout to 1",
+        "10 easeinout to 0"
     ]
     
-} );
+});
 ```
 
 Or load the content with AJAX and parse it when it's loaded:
@@ -91,11 +95,21 @@ Or load the content with AJAX and parse it when it's loaded:
 ```js
 var oReq = new XMLHttpRequest();
 oReq.onload = function() {
-	storyline = STORYLINE.parseStoryline( this.responseText );
+	storyline = new Storyboard(this.responseText);
 	/* ready to use */
 };
-oReq.open( 'get', 'storyboard.json', true);
+oReq.open('get', 'storyboard.json', true);
 oReq.send();
+```
+
+#### Register an easing function ####
+
+```js
+Storyline.registerEasing("easingname", function( elapsed, duration ){
+   
+   return elaped / duration; // linear easing
+
+});
 ```
 
 ### Status ####

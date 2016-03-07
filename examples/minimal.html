@@ -9,31 +9,27 @@
 	</style>
 </head>
 <body>
-
 	<p>This is very minimal. Check your console!</p>
-
-	<script src="js/storyline.js"></script>
-
+	<script src="../src/storyline.js"></script>
 	<script>
 
-var storyline = STORYLINE.parseStoryline( {
+		var storyline = new Storyline({
+			"value1": [
+				"0 cut to 0",
+				"5 easeinout to 1",
+				"10 easeinout to 0"
+			]
+		});
 
-    "value1": [
-        "0 cut to 0",
-        "5 ease to 1",
-        "10 ease to 0"
-    ]
-    
-} );
+		function update( now ) {
 
-function update() {
-    
-    requestAnimationFrame( update );
-    console.log( storyline.get( 'value1', ( Date.now() / 1000 ) % 10 ) );
-    
-}
+			requestAnimationFrame(update);
+		
+			console.log(storyline.get("value1", (now / 1000) % 10));
 
-update();
+		}
+
+		requestAnimationFrame(update);
 
 	</script>
 </body>

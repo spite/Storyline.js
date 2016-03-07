@@ -1,0 +1,40 @@
+{
+
+ "y": [
+   "0 cut to 0",
+   "2 linear to .5",
+   "4 easeinout to 0",
+   "5 easeinout to .25",
+   "6 easeinout to .5",
+   "7 easeinout to .75",
+   "8 linear to 1",
+   "10 easeinout to 0"
+ ],
+
+ "x": [
+   "0 cut to -1",
+   "2 easeinout to 1",
+   "4 easeinout to 0",
+   "6 easeinout to -1",
+   "8 easeinout to 1",
+   "10 easeinout to -1"
+ ],
+
+ "angle": [
+   "0 cut to 0",
+   "3 easeinout to 80",
+   "6 easeinout to -70",
+   "8 easeinout to 20",
+   "10 easeinout to 0"
+ ],
+
+ "scale": [
+   "0 cut to 1",
+   "2 easeinout to 1.5",
+   "4 easeinout to .5",
+   "6 easeinout to 2",
+   "8 easeinout to .25",
+   "10 easeinout to 10"
+ ]
+
+}

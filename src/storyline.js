@@ -1,167 +1,166 @@
-( function() { 
+(function( self ){
 
-var ACTIONS = {
-	CUT: 0,
-	EASE: 1,
-	LINEAR: 2
-}
+	var easings = new Array();
 
-function Event() {
-	this.start = null;
-	this.end = null;
-	this.action = null;
-	this.from = 0;
-	this.to = 0;
-	this.duration = 0;
-}
+	var Storyline = function( story, duration ){
 
-function Storyline() {
+		return Storyline.methods.initialize(story, duration);
 
-	this.points = {};
+	};
 
-	this.get = function( id, t ) {
-		return averageData( this.points, t, id ); 
-	}
+	Storyline.methods = Storyline.prototype = {
+		constructor: Storyline,
+		initialize: function( story, duration ){
 
-}
+			this.storyboard = new Object();
 
-function parseStoryline( story ) {
+			this.duration = (parseFloat(duration) || 1);
 
-	var s = new Storyline();
+			for( var key in story ){
 
-	for( var v in story ) {
-		if( story.hasOwnProperty( v ) ) {
+				for( var step in story[key] ){
 
-			var storyboard = [];
+					var parameters = story[key][step].split(/\s+/);
+					var time = parseFloat(parameters[0]);
+					var easing = Storyline.getEasing(parameters[1]);
+					var value = parseFloat(parameters[3]);
 
-			story[ v ].forEach( function( e ) {
-				var start = e.match( /([^\s]+)/ );
-				var event = new Event();
-				if( e.indexOf( 'cut to' ) != -1 ) {
-					event.start = parseFloat( start[ 1 ] );
-					event.action = ACTIONS.CUT;
-					var v = e.match( /[^\s]+ cut to ([^\s]+)/ );
-					event.from = parseFloat( v[ 1 ] );
-					event.to = event.from;
-					event.end = event.start;
-				}
-				if( e.indexOf( 'ease to' ) != -1 ) {
-					event.end = parseFloat( start[ 1 ] );
-					event.action = ACTIONS.EASE;
-					event.from = 0;
-					var v = e.match( /[^\s]+ ease to ([^\s]+)/ );
-					event.to = parseFloat( v[ 1 ] );
-				}
-				if( e.indexOf( 'linear to' ) != -1 ) {
-					event.end = parseFloat( start[ 1 ] );
-					event.action = ACTIONS.LINEAR;
-					event.from = 0;
-					var v = e.match( /[^\s]+ linear to ([^\s]+)/ );
-					event.to = parseFloat( v[ 1 ] );
-				}
-				storyboard.push( event );
-			} );
+					this.set(key, time, easing, value);
 
-			storyboard.forEach( function( e, i ) {
-				if( e.action === ACTIONS.EASE || e.action == ACTIONS.LINEAR ) {
-					e.start = storyboard[ i - 1 ].end;
-					e.from = storyboard[ i - 1 ].to;
-				}
-				e.duration = e.end - e.start;
-			} );
+				};
 
-			storyboard.forEach( function( e, i ) {
-				if( e.action === ACTIONS.CUT ) {
-					if( storyboard[ i + 1 ] ) {
-						e.end = storyboard[ i + 1 ].start;
-					}
-				}
-			} );
+			};
 
-			/*storyboard.forEach( function( e, i ) {
-				console.log( e.from + '(' + e.start + ')' + ' to ' + e.to + '(' + e.end + ') in ' + e.duration );
-			} );*/
+			return this;
 
-			s.points[ v ] = storyboard;
+		},
+		set: function( key, time, easing, value ){
+
+			if( this.storyboard[key] == undefined ){
+
+				this.storyboard[key] = new Array();
+
+			};
+
+			this.storyboard[key].push([(time * this.duration), easing, value]);
+
+			this.storyboard[key].sort(function( before, after ){
+
+				return before[0] - after[0];
+
+			});
+
+			return this;
+
+		},
+		get: function( key, now ){
+
+			if( this.storyboard[key] != undefined ){
+
+				for( var stepMax = this.storyboard[key].length - 1, step = stepMax; step >= 0; step-- ){
+
+					if( this.storyboard[key][step][0] <= now ){
+
+						var timeDestination = this.storyboard[key][Math.min(step + 1, stepMax)][0];
+						var easingDestination = this.storyboard[key][Math.min(step + 1, stepMax)][1];
+						var valueDestination = this.storyboard[key][Math.min(step + 1, stepMax)][2];
+						var valueDifference = valueDestination - this.storyboard[key][step][2];
+						var elapsedTime = Math.min((now - this.storyboard[key][step][0]) / (timeDestination - this.storyboard[key][step][0]) || 0, 1);
+
+						return this.storyboard[key][step][2] + (easings[easingDestination][1](elapsedTime, 1) * valueDifference);
+
+					};
+
+				};
+
+			};
+
+			return null;
 
 		}
-	}
+	};
 
-	return s;
+	Storyline.registerEasing = function( name, easingFunction ){
 
-}
-	
-function getPointInStoryline( storyline, t, value ) {
-	
-	if( !storyline[ value ] ) return null;
+		easings.push([name.toLowerCase(), easingFunction]);
 
-	for( var j = 0; j < storyline[ value ].length; j++ ) {
-		var e = storyline[ value ][ j ];
-		if( e.start <= t && e.end > t ) {
-			return e;
+	};
+
+	Storyline.getEasing = function( name ){
+
+		name = name.toLowerCase();
+
+		for( var easing = 0, length = easings.length; easing < length; easing++ ){
+
+			if( name == easings[easing][0] ){
+
+				return easing;
+
+			};
+
+		};
+
+		return null;
+
+	};
+
+	Storyline.registerEasing("cut", function( elapsed, duration ){
+
+		return (elapsed < 1 ? 0 : 1);
+
+	});
+
+	Storyline.registerEasing("linear", function( elapsed, duration ){
+
+		return (elapsed / duration);
+
+	});
+
+	Storyline.registerEasing("easein", function( elapsed, duration ){
+
+		return elapsed * elapsed * elapsed;
+
+	});
+
+	Storyline.registerEasing("easeout", function( elapsed, duration ){
+
+		return (elapsed -= 1) * elapsed * elapsed + 1;
+
+	});
+
+	Storyline.registerEasing("easeinout", function( elapsed, duration ){
+
+		if( (elapsed /= duration / 2) < 1 ){
+
+			return 0.5 * elapsed * elapsed * elapsed;
+
 		}
-	}
+		else {
 
-	return null;
+			return 0.5 * ((elapsed -= 2) * elapsed * elapsed + 2);
 
-}
+		};
 
-function averageData( story, t, value ) {
+	});
 
-	if( !story[ value ] ) {
-		console.warn( value + ' not found on storyboard' );
-		return;
-	}
+	if( typeof define !== "undefined" && define instanceof Function && define.amd != undefined ){
 
-	var p;
+		define(function(){
 
-	if( t > story[ value ][ story[ value ].length - 1 ].end ) {
-		p = story[ value ][ story[ value ].length - 1 ];
-	} else {
-		p = getPointInStoryline( story, t, value );
-	}
+			return Storyline;
 
-	if( !p ) return null;
-
-	if( p.action === ACTIONS.CUT ) {
-		return p.from;
-	}
-
-	if( p.action === ACTIONS.EASE ) {
-	
-		var et = ( t - p.start ) / p.duration;
-		et = Math.max( Math.min( et, 1 ), 0 );
-		var easing;
-		if ( ( et *= 2 ) < 1 ) easing = 0.5 * et * et;
-		else easing = - 0.5 * ( --et * ( et - 2 ) - 1 );
-
-		var v = p.from + ( easing * ( p.to - p.from ) );
-
-		return v;
+		});
 
 	}
+	else if( typeof module !== "undefined" && module.exports ){
 
-	if( p.action === ACTIONS.LINEAR ) {
-	
-		var et = ( t - p.start ) / p.duration;
-		et = Math.max( Math.min( et, 1 ), 0 );
-		var v = p.from + ( et * ( p.to - p.from ) );
-
-		return v;
+		module.exports = Storyline;
 
 	}
+	else if( self != undefined ){
 
-}
+		self.Storyline = Storyline;
 
-function setValue( original, value ) {
+	};
 
-	if( value !== null ) return value;
-	return original
-
-}
-
-window.STORYLINE = {
-	parseStoryline: parseStoryline
-}
-
-} )();
+})(self || {});
