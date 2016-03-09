@@ -33,6 +33,14 @@
 					"0 cut to 0",
 					"1000 linear to 1"
 				],
+				cut: [
+					"0 cut to 0",
+					"1000 cut to 1"
+				],
+				linear: [
+					"0 cut to 0",
+					"1000 linear to 1"
+				],
 				easein: [
 					"0 cut to 0",
 					"1000 easein to 1"
@@ -46,54 +54,76 @@
 					"1000 easeinout to 1"
 				],
 				quadraticX: [
-					"0.5 cut to 0",
-					"1000 quadratic(0,0,1) to 1"
+					"0 cut to 0",
+					"1000 quadratic(0," + Math.random() + ",1) to 1"
 				],
 				quadraticY: [
-					"0.5 cut to 0",
-					"1000 quadratic(0,1,1) to 1"
+					"0 cut to 0",
+					"1000 quadratic(0," + Math.random() + ",1) to 1"
 				],
 				cubicX: [
-					"0.5 cut to 0",
-					"1000 cubic(0,1,1,1) to 1"
+					"0 cut to 0",
+					"1000 cubic(0," + Math.random() + "," + Math.random() + ",1) to 1"
 				],
 				cubicY: [
-					"0.5 cut to 0",
-					"1000 cubic(0,0.25,0.75,1) to 1"
+					"0 cut to 0",
+					"1000 cubic(0," + Math.random() + "," + Math.random() + ",1) to 1"
+				],
+				vec3: [
+					"0 cut to vec3(0,0,0)",
+					"1000 easein to vec3(1,0.5,0.25)"
 				]
 			});
 
+			var cutCurve = new CanvasCurve(200);
+			var linearCurve = new CanvasCurve(200);
 			var easeinCurve = new CanvasCurve(200);			
 			var easeoutCurve = new CanvasCurve(200);			
 			var easeinoutCurve = new CanvasCurve(200);			
 			var quadraticCurve = new CanvasCurve(200);			
-			var cubicCurve = new CanvasCurve(200);			
+			var cubicCurve = new CanvasCurve(200);
+			var vec3Curve = new CanvasCurve(200);
 
-			function update( now ){
+			var delay = 0;
+			var now = 0;
+
+			function update( updateNow ){
 
 				window.requestAnimationFrame(update);
 
+				now = updateNow - delay;
+
 				var time = storyline.get("time", now);
 
+				var cut = storyline.get("cut", now);
+				cutCurve.drawEasing(time, cut);
+
+				var linear = storyline.get("linear", now);
+				linearCurve.drawEasing(time, linear);
+
 				var easein = storyline.get("easein", now);
-				easeinCurve.drawPoint(time, easein);
+				easeinCurve.drawEasing(time, easein);
 
 				var easeout = storyline.get("easeout", now);
-				easeoutCurve.drawPoint(time, easeout);
+				easeoutCurve.drawEasing(time, easeout);
 
 				var easeinout = storyline.get("easeinout", now);
-				easeinoutCurve.drawPoint(time, easeinout);
+				easeinoutCurve.drawEasing(time, easeinout);
 
 				var quadraticX = storyline.get("quadraticX", now);
 				var quadraticY = storyline.get("quadraticY", now);
-				quadraticCurve.drawPoint(quadraticX, quadraticY);
+				quadraticCurve.drawEasing(quadraticX, quadraticY);
 
 				var cubicX = storyline.get("cubicX", now);
 				var cubicY = storyline.get("cubicY", now);
-				cubicCurve.drawPoint(cubicX, cubicY);
+				cubicCurve.drawEasing(cubicX, cubicY);
+
+				var vec3 = storyline.get("vec3", now);
+				vec3Curve.drawVector3(time, vec3, ["#F00", "#0F0", "#00F"]);
 
 			};
 
+			delay = window.performance.now();
 			window.requestAnimationFrame(update);
 
 		}, false);
@@ -121,13 +151,31 @@
 				return this;
 
 			},
-			drawPoint: function( time, value ){
+			drawEasing: function( time, value, color ){
 
-				var x = (time * this.size);
+				var x = (time * this.size) - 1;
 				var y = this.size - (value * this.size) - 1;
 
-				this.context.fillStyle = "#FFFFFF";
+				this.context.fillStyle = (color || "#FFF");
 				this.context.fillRect(x, y, 2, 2);
+
+			},
+			drawVector3: function( time, vector, colors ){
+
+				var t = (time * this.size) - 1;
+
+				var x = this.size - (vector[0] * this.size) - 1;
+				var y = this.size - (vector[1] * this.size) - 1;
+				var z = this.size - (vector[2] * this.size) - 1;
+
+				this.context.fillStyle = (colors[0] || "#FFF");
+				this.context.fillRect(t, x, 2, 2);
+
+				this.context.fillStyle = (colors[1] || "#FFF");
+				this.context.fillRect(t, y, 2, 2);
+
+				this.context.fillStyle = (colors[2] || "#FFF");
+				this.context.fillRect(t, z, 2, 2);
 
 			}
 		};

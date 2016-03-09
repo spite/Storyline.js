@@ -1,9 +1,11 @@
 (function( self ){
 
-	var KEY_TIME = 0;
-	var KEY_EASING = 1;
-	var KEY_OPTIONS = 2;
-	var KEY_VALUE = 3;
+	var KEY = {
+		TIME: 0,
+		EASING: 1,
+		OPTIONS: 2,
+		VALUE: 3
+	};
 
 	var easings = new Array();
 
@@ -24,15 +26,19 @@
 			for( var key in story ){
 
 				for( var step in story[key] ){
+					
+					var time = parseFloat(story[key][step].match(/^\s*([0-9]+\.?[0-9]*)/g)[0]);
 
-					var parameters = story[key][step].split(/\s+/);
-					var time = parseFloat(parameters[0]);
 					var easing = story[key][step].match(/([a-z]+)(?:\((.*)\))?/);
 					var easingMode = Storyline.getEasing(easing[1]);
-					var easingOptions = (easing[2] || "").split(/\,/g);
-					var value = parseFloat(parameters[3]);
+					var easingOptions = (easing[2] != undefined ? easing[2].split(/\,/g) : null);
 
-					var time = parseFloat(story[key][step].match(/^([0-9]+\.?[0-9]*)/g)[0]);
+					var extractedValue = story[key][step].match(/(?:([0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0].match(/([0-9]+\.?[0-9]*)/g);
+					var value = extractedValue.map(function( number ){
+
+						return parseFloat(number);
+
+					});
 
 					this.set(key, time, easingMode, easingOptions, value);
 
@@ -70,16 +76,26 @@
 
 					if( this.storyboard[key][step][0] <= now ){
 
-						var timeDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_TIME];
-						var easingDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_EASING];
-						var optionsDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_OPTIONS];
-						var valueDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_VALUE];
-						
-						var valueDifference = valueDestination - this.storyboard[key][step][KEY_VALUE];
-						
-						var elapsedTime = Math.min(((now - this.storyboard[key][step][KEY_TIME]) / (timeDestination - this.storyboard[key][step][KEY_TIME]) || 0), 1);
+						var destinationTime = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.TIME];
+						var destinationEasing = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.EASING];
+						var destinationOptions = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.OPTIONS];
+						var destinationValues = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.VALUE];
 
-						return this.storyboard[key][step][KEY_VALUE] + (easings[easingDestination][KEY_EASING](elapsedTime, 1, optionsDestination) * valueDifference);
+						var fromValues = this.storyboard[key][step][KEY.VALUE];
+
+						var values = new Array();
+
+						for( var valueIndex = 0, length = destinationValues.length; valueIndex < length; valueIndex++ ){
+
+							var difference = destinationValues[valueIndex] - fromValues[valueIndex];
+
+							var elapsed = Math.min(((now - fromValues[valueIndex]) / (destinationTime - fromValues[valueIndex]) || 0), 1);
+
+							values[valueIndex] = fromValues[valueIndex] + (easings[destinationEasing][KEY.EASING](elapsed, 1, destinationOptions) * difference);
+
+						};
+
+						return (values.length == 1 ? values[0] : values);
 
 					};
 
