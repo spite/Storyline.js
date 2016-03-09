@@ -1,0 +1,201 @@
+(function( self ){
+
+	var KEY_TIME = 0;
+	var KEY_EASING = 1;
+	var KEY_OPTIONS = 2;
+	var KEY_VALUE = 3;
+
+	var easings = new Array();
+
+	var Storyline = function( story, duration ){
+
+		return Storyline.methods.initialize(story, duration);
+
+	};
+
+	Storyline.methods = Storyline.prototype = {
+		constructor: Storyline,
+		initialize: function( story, duration ){
+
+			this.storyboard = new Object();
+
+			this.duration = (parseFloat(duration) || 1);
+
+			for( var key in story ){
+
+				for( var step in story[key] ){
+
+					var parameters = story[key][step].split(/\s+/);
+					var time = parseFloat(parameters[0]);
+					var easing = story[key][step].match(/([a-z]+)(?:\((.*)\))?/);
+					var easingMode = Storyline.getEasing(easing[1]);
+					var easingOptions = (easing[2] || "").split(/\,/g);
+					var value = parseFloat(parameters[3]);
+
+					var time = parseFloat(story[key][step].match(/^([0-9]+\.?[0-9]*)/g)[0]);
+
+					this.set(key, time, easingMode, easingOptions, value);
+
+				};
+
+			};
+
+			return this;
+
+		},
+		set: function( key, time, easing, options, value ){
+
+			if( this.storyboard[key] == undefined ){
+
+				this.storyboard[key] = new Array();
+
+			};
+
+			this.storyboard[key].push([(time * this.duration), easing, options, value]);
+
+			this.storyboard[key].sort(function( before, after ){
+
+				return before[0] - after[0];
+
+			});
+
+			return this;
+
+		},
+		get: function( key, now ){
+
+			if( this.storyboard[key] != undefined ){
+
+				for( var stepMax = this.storyboard[key].length - 1, step = stepMax; step >= 0; step-- ){
+
+					if( this.storyboard[key][step][0] <= now ){
+
+						var timeDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_TIME];
+						var easingDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_EASING];
+						var optionsDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_OPTIONS];
+						var valueDestination = this.storyboard[key][Math.min(step + 1, stepMax)][KEY_VALUE];
+						
+						var valueDifference = valueDestination - this.storyboard[key][step][KEY_VALUE];
+						
+						var elapsedTime = Math.min(((now - this.storyboard[key][step][KEY_TIME]) / (timeDestination - this.storyboard[key][step][KEY_TIME]) || 0), 1);
+
+						return this.storyboard[key][step][KEY_VALUE] + (easings[easingDestination][KEY_EASING](elapsedTime, 1, optionsDestination) * valueDifference);
+
+					};
+
+				};
+
+			};
+
+			return null;
+
+		}
+	};
+
+	Storyline.registerEasing = function( name, easingFunction ){
+
+		easings.push([name.toLowerCase(), easingFunction]);
+
+	};
+
+	Storyline.getEasing = function( name ){
+
+		name = name.toLowerCase();
+
+		for( var easing = 0, length = easings.length; easing < length; easing++ ){
+
+			if( name == easings[easing][0] ){
+
+				return easing;
+
+			};
+
+		};
+
+		return null;
+
+	};
+
+	Storyline.registerEasing("cut", function( elapsed, duration, options ){
+
+		return (elapsed < 1 ? 0 : 1);
+
+	});
+
+	Storyline.registerEasing("linear", function( elapsed, duration, options ){
+
+		return (elapsed / duration);
+
+	});
+
+	Storyline.registerEasing("easein", function( elapsed, duration, options ){
+
+		return elapsed * elapsed * elapsed;
+
+	});
+
+	Storyline.registerEasing("easeout", function( elapsed, duration, options ){
+
+		return (elapsed -= 1) * elapsed * elapsed + 1;
+
+	});
+
+	Storyline.registerEasing("easeinout", function( elapsed, duration, options ){
+
+		if( (elapsed /= duration / 2) < 1 ){
+
+			return 0.5 * elapsed * elapsed * elapsed;
+
+		}
+		else {
+
+			return 0.5 * ((elapsed -= 2) * elapsed * elapsed + 2);
+
+		};
+
+	});
+
+	Storyline.registerEasing("quadratic", function( elapsed, duration, options ){
+
+		var invertedElapsed = 1 - elapsed;
+		var point1 = parseFloat(options[0]);
+		var point2 = parseFloat(options[1]);
+		var point3 = parseFloat(options[2]);
+
+		return invertedElapsed * invertedElapsed * point1 + 2 * invertedElapsed * elapsed * point2 + elapsed * elapsed * point3;
+
+	});
+
+	Storyline.registerEasing("cubic", function( elapsed, duration, options ){
+
+		var invertedElapsed = 1 - elapsed;
+		var point1 = parseFloat(options[0]);
+		var point2 = parseFloat(options[1]);
+		var point3 = parseFloat(options[2]);
+		var point4 = parseFloat(options[3]);
+
+		return invertedElapsed * invertedElapsed * invertedElapsed * point1 + 3 * invertedElapsed * invertedElapsed * elapsed * point2 + 3 * invertedElapsed * elapsed * elapsed * point3 + elapsed * elapsed * elapsed * point4;
+
+	});
+
+	if( typeof define !== "undefined" && define instanceof Function && define.amd != undefined ){
+
+		define(function(){
+
+			return Storyline;
+
+		});
+
+	}
+	else if( typeof module !== "undefined" && module.exports ){
+
+		module.exports = Storyline;
+
+	}
+	else if( self != undefined ){
+
+		self.Storyline = Storyline;
+
+	};
+
+})(self || {});
