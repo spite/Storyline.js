@@ -3,7 +3,7 @@
 	var KEY = {
 		TIME: 0,
 		EASING: 1,
-		OPTIONS: 2,
+		OPTION: 2,
 		VALUE: 3
 	};
 
@@ -74,24 +74,21 @@
 
 				for( var stepMax = this.storyboard[key].length - 1, step = stepMax; step >= 0; step-- ){
 
-					if( this.storyboard[key][step][0] <= now ){
+					if( this.storyboard[key][step][KEY.TIME] <= now ){
 
-						var destinationTime = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.TIME];
-						var destinationEasing = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.EASING];
-						var destinationOptions = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.OPTIONS];
-						var destinationValues = this.storyboard[key][Math.min(step + 1, stepMax)][KEY.VALUE];
-
-						var fromValues = this.storyboard[key][step][KEY.VALUE];
+						var from = this.storyboard[key][step];
+						var to = this.storyboard[key][Math.min(step + 1, stepMax)];
 
 						var values = new Array();
 
-						for( var valueIndex = 0, length = destinationValues.length; valueIndex < length; valueIndex++ ){
+						for( var valueIndex = 0, length = to[KEY.VALUE].length; valueIndex < length; valueIndex++ ){
 
-							var difference = destinationValues[valueIndex] - fromValues[valueIndex];
+							var difference = to[KEY.VALUE][valueIndex] - from[KEY.VALUE][valueIndex];
+							var duration = to[KEY.TIME] - from[KEY.TIME];
 
-							var elapsed = Math.min(((now - fromValues[valueIndex]) / (destinationTime - fromValues[valueIndex]) || 0), 1);
+							var elapsed = Math.min((((now - from[KEY.TIME]) / duration) || 0), 1)
 
-							values[valueIndex] = fromValues[valueIndex] + (easings[destinationEasing][KEY.EASING](elapsed, 1, destinationOptions) * difference);
+							values[valueIndex] = from[KEY.VALUE][valueIndex] + (easings[to[KEY.EASING]][KEY.EASING](elapsed, 1, to[KEY.OPTION]) * difference);
 
 						};
 
