@@ -33,7 +33,7 @@
 					var easingMode = Storyline.getEasing(easing[1]);
 					var easingOptions = (easing[2] != undefined ? easing[2].split(/\,/g) : null);
 
-					var extractedValue = story[key][step].match(/(?:([0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0].match(/([0-9]+\.?[0-9]*)/g);
+					var extractedValue = story[key][step].match(/(?:(\-?\s*[0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0].match(/(\-?\s*[0-9]+\.?[0-9]*)/g);
 					var value = extractedValue.map(function( number ){
 
 						return parseFloat(number);
@@ -94,6 +94,13 @@
 							values[valueIndex] = fromValues[valueIndex] + (easings[destinationEasing][KEY.EASING](elapsed, 1, destinationOptions) * difference);
 
 						};
+
+						return (values.length == 1 ? values[0] : values);
+
+					}
+					else if( step == 0 ){
+
+						var values = this.storyboard[key][step][KEY.VALUE];
 
 						return (values.length == 1 ? values[0] : values);
 
