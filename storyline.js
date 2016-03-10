@@ -11,7 +11,7 @@
 
 	var Storyline = function( story, duration ){
 
-		return Storyline.methods.initialize(story, duration);
+		return new Storyline.methods.initialize(story, duration);
 
 	};
 
@@ -107,6 +107,8 @@
 
 		}
 	};
+
+	Storyline.methods.initialize.prototype = Storyline.methods;
 
 	Storyline.registerEasing = function( name, easingFunction ){
 
