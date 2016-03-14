@@ -168,6 +168,18 @@
 
 	});
 
+	Storyline.registerType("bool", function( options ){
+
+		for( var option = 0, length = options.length; option < length; option++ ){
+
+			options[option] = (parseInt(options[option]) ? true : false);
+
+		};
+
+		return options;
+
+	});
+
 	Storyline.registerType("vec2", function( options ){
 
 		options.x = options[0];
