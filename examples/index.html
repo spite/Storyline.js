@@ -43,15 +43,15 @@
 				],
 				easein: [
 					"0 cut to 0",
-					"1000 easein to 1"
+					"1000 easeIn to 1"
 				],
 				easeout: [
 					"0 cut to 0",
-					"1000 easeout to 1"
+					"1000 easeOut to 1"
 				],
 				easeinout: [
 					"0 cut to 0",
-					"1000 easeinout to 1"
+					"1000 easeInOut to 1"
 				],
 				quadraticX: [
 					"0 cut to 0",
@@ -71,7 +71,7 @@
 				],
 				vec3: [
 					"0 cut to vec3(0,0,0)",
-					"1000 easein to vec3(1,0.5,0.25)"
+					"1000 easeIn to vec3(1,0.5,0.25)"
 				]
 			});
 
@@ -93,35 +93,37 @@
 
 				now = updateNow - delay;
 
-				var time = storyline.get("time", now);
+				if( now <= storyline.duration ){
 
-				var cut = storyline.get("cut", now);
-				cutCurve.drawEasing(time, cut);
+					var time = storyline.get("time", now);
 
-				var linear = storyline.get("linear", now);
-				linearCurve.drawEasing(time, linear);
+					var cut = storyline.get("cut", now);
+					cutCurve.drawEasing(time, cut);
 
-				var easein = storyline.get("easein", now);
-				easeinCurve.drawEasing(time, easein);
+					var linear = storyline.get("linear", now);
+					linearCurve.drawEasing(time, linear);
 
-				var easeout = storyline.get("easeout", now);
-				easeoutCurve.drawEasing(time, easeout);
+					var easein = storyline.get("easein", now);
+					easeinCurve.drawEasing(time, easein);
 
-				var easeinout = storyline.get("easeinout", now);
-				easeinoutCurve.drawEasing(time, easeinout);
+					var easeout = storyline.get("easeout", now);
+					easeoutCurve.drawEasing(time, easeout);
 
-				var quadraticX = storyline.get("quadraticX", now);
-				var quadraticY = storyline.get("quadraticY", now);
-				quadraticCurve.drawEasing(quadraticX, quadraticY);
+					var easeinout = storyline.get("easeinout", now);
+					easeinoutCurve.drawEasing(time, easeinout);
 
-				var cubicX = storyline.get("cubicX", now);
-				var cubicY = storyline.get("cubicY", now);
-				cubicCurve.drawEasing(cubicX, cubicY);
+					var quadraticX = storyline.get("quadraticX", now);
+					var quadraticY = storyline.get("quadraticY", now);
+					quadraticCurve.drawEasing(quadraticX, quadraticY);
 
-				var vec3 = storyline.get("vec3", now);
-				vec3Curve.drawVector3(time, vec3, ["#F00", "#0F0", "#00F"]);
+					var cubicX = storyline.get("cubicX", now);
+					var cubicY = storyline.get("cubicY", now);
+					cubicCurve.drawEasing(cubicX, cubicY);
 
-				console.log( storyline.get("test", now) );
+					var vec3 = storyline.get("vec3", now);
+					vec3Curve.drawVector3(time, vec3, ["#F00", "#0F0", "#00F"]);
+
+				};
 
 			};
 
@@ -166,9 +168,9 @@
 
 				var t = (time * this.size) - 1;
 
-				var x = this.size - (vector[0] * this.size) - 1;
-				var y = this.size - (vector[1] * this.size) - 1;
-				var z = this.size - (vector[2] * this.size) - 1;
+				var x = this.size - (vector.x * this.size) - 1;
+				var y = this.size - (vector.y * this.size) - 1;
+				var z = this.size - (vector.z * this.size) - 1;
 
 				this.context.fillStyle = (colors[0] || "#FFF");
 				this.context.fillRect(t, x, 2, 2);
