@@ -1,135 +1,183 @@
-# Storyline.js - Multi-purpose sequencer
+# Storyline.js - JavaScript Animation Sequencer
 
 **Storyline.js** is a library to help define a storyboard using natural language.
 
-This is the refined and polished version of the sytem created for [BEYOND](http://b-e-y-o-n-d.com/) and [cru·ci·form](http://www.clicktorelease.com/code/cruciform/).
+[Check all the demos](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)
 
-Check out the example to see it in action: [Storyline.js with CSS 2D transforms](http://www.clicktorelease.com/tools/storylinejs/).
+### How to?
 
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/mQVU3Lb0D-w/0.jpg)](http://www.youtube.com/watch?v=mQVU3Lb0D-w)
+The Storyline class only come with two options :
+ - storyboard: a simple object containing all keyframes.
+ - timescale: (optional) multiply all key's time with it. 
 
-#### Using Storyline.js ####
+```javascript
+    var storyline = new Storyline(storyboard [, timescale]);
+```
 
-There's two parts: Storyline.js is the parser and player, and then a storyboard source object that defines the story. A storyline source has this format:
+#### Storyboard hierarchy
 
-```json
-{
-    "value1": [
-        "0 cut to 10",
-        "2 linear to 3"
+ - name: the name of the animation.
+ - time: the begining of the current value to the next one in milliseconds.
+ - easing: the easing to use.
+ - value: the value(s) to animate (multiple values are between parenthesis).
+
+```javascript
+    {
+        {name}: [
+            "{time} {easing} to {value}",
+            "{time} {easing} to {value}",
+            "{time} {easing} to {value}"
+        ],
+        {name}: [
+            "{time} {easing} to ({value}, {value}, {value})",
+            "{time} {easing} to ({value}, {value}, {value})"
+        ]
+    }
+```
+
+
+#### Timing
+
+Each key times are in milliseconds.
+
+```javascript
+    var storyline = new Storyline({
+        key1: [
+            "0 cut to 0",
+            "500 linear to 1",
+            "1000 linear to 2"
+        ]
+    });
+```
+
+You may need to create animations with a limited duration, you can use the `timescale` option to do that.
+Each time will be multiplied by the `timescale`.
+
+```javascript
+
+    var duration = 5000; // timescale of 5s
+
+    var storyline = new Storyline({
+        key1: [
+            "0 cut to 0",
+            "0.3 linear to 3",
+            "1 linear to 4"
+        ]
+    }, duration);
+```
+
+
+#### Easing
+
+There is already some basic easings:
+ - cut: immediately switch to the value if the time is upper or equal to the key.
+ - linear: linearly interpolate to the value.
+ - easeIn: ease in from the previous value to the key value.
+ - easeOut: ease out from the previous value to the key value.
+ - easeInOut: ease in and out from the previous value to the key value.
+ - quadratic(from,c,to): get value along a qaudratic bezier curve (see [stackoverflow explainations](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)).
+ - cubic(from,cx,cy,to): get value along a cubic bezier curve (see [stackoverflow explainations](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)).
+
+But you can also register your own easings:
+
+```javascript
+    Storyline.registerEasing(customEasingName, function( elapsed, duration, options ){
+
+        return (elapsed / duration); // Linear easing
+
+    });
+```
+
+ - elpsed: normalized elpased time (between 0 and 1).
+ - duration: normalized duration (always 1...)
+ - options: array of values, only if the easing take options (parenthesis with parameters).
+
+
+#### Type
+
+You can animate one or many values in each keys but you can also use types:
+int: only returns integers.
+bool: return true if the value is upper or equal to 1, else return false.
+vec2: return the values with `.x` and `.y` getters.
+vec3: return the values with `.x`, `.y` and `.z` getters.
+
+But you can also register your own types:
+
+```javascript
+    Storyline.registerType("invert", function( options ){
+
+        for( var option = 0, length = options.length; option < length; option++ ){
+
+            options[option] = (options[option] * -1);
+
+        };
+
+        return options;
+
+    });
+```
+
+### Examples
+
+#### Simple
+
+```javascript
+   var storyline = new Storyline({
+    key1: [
+        "0 cut to 0",
+        "500 easeIn to 360",
+        "1000 linear to 180"
     ],
-    
-    "value2": [
-        "0 cut to 0",
-        "4 easeinout to 1",
-        "6 easeinout to 0"
+    key2: [
+        "500 cut to 180",
+        "1000 lienar to 0"
     ]
-}
+   });
+
+   function update( now ){
+
+       window.requestAnimationFrame(update);
+
+       var key1 = storyline.get("key1", now);
+       var key2 = storyline.get("key2", now);
+
+   };
+
+   window.requestAnimationFrame(update);
 ```
 
-This source object is a map of keys (each key is a value that you will be using in your code *x*, *angle*, *power*, etc.), and each key contains an array of entries. Each entry defines a point in time, and a storyline action, and has the following syntax:
+#### With fixed duration
 
-```
-{time in seconds} {action to perform} {value of action}
-```
-
-The actions are:
-
-- *cut to* instanteously changes to {value}
-- *linear to* will linearly interpolate from the last defined value to {value}
-- *easein to* will ease in from the last defined value to {value}
-- *easeout to* will ease out from the last defined value to {value}
-- *easeinout to* will ease in and out from the last defined value to {value}
-
-and you can register your own easing with the "registerEasing" method.
-
-#### Minimal example ####
-
-Include Storyline.js
-
-```html
-<script src="Storyline.js"></script>
-```
-
-Create a storyline from a structured storyboard source. By calling storyline.get you can get the updated value:
-
-```js
-var storyline = STORYLINE.parseStoryline( {
-
-    "value1": [
+```javascript
+   var storyline = new Storyline({
+    key1: [
         "0 cut to 0",
-        "5 easeinout to 1",
-        "10 easeinout to 0"
+        "0.5 easeIn to 360",
+        "1 linear to 180"
+    ],
+    key2: [
+        "0.5 cut to 180",
+        "1 lienar to 0"
     ]
-    
-} );
+   }, 1000);
 
-function update() {
-    
-    requestAnimationFrame( update );
-    console.log( storyline.get( 'value1', ( Date.now() / 1000 ) % 10 ) );
-    
-}
+   function update( now ){
 
-update();
+       window.requestAnimationFrame(update);
+
+       var key1 = storyline.get("key1", now);
+       var key2 = storyline.get("key2", now);
+
+   };
+
+   window.requestAnimationFrame(update);
 ```
 
-#### External storyboard example ####
+[Check all the demos/examples](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)
 
-Simply export the storyline into its own file, and include it like a normal script.
-
-```js
-var storyline = new Storyline({
-
-    "value1": [
-        "0 cut to 0",
-        "5 easeinout to 1",
-        "10 easeinout to 0"
-    ]
-    
-});
-```
-
-Or load the content with AJAX and parse it when it's loaded:
-
-```js
-var oReq = new XMLHttpRequest();
-oReq.onload = function() {
-	storyline = new Storyboard(this.responseText);
-	/* ready to use */
-};
-oReq.open('get', 'storyboard.json', true);
-oReq.send();
-```
-
-#### Register an easing function ####
-
-```js
-Storyline.registerEasing("easingname", function( elapsed, duration ){
-   
-   return elaped / duration; // linear easing
-
-});
-```
-
-### Status ####
-
-This is the first release. Next steps are to add syntax to control the easing functions, probably something like:
-
-```
-{time} ease to {value} { [ set of easing control points] }
-```
-
-Also, support specific functions to simplify animations:
-
-```
-{time} {wiggle|shake} {extent}
-```
-
-As always: forks, pull requests and code critiques are welcome!
-
-#### License ####
+#### License
 
 MIT licensed
 
-Copyright (C) 2015 Jaume Sanchez Elias, http://www.clicktorelease.com
+Original idea from [Jaume Sanchez Elias](http://www.clicktorelease.com)
+Entirely rewrited by [Jordan Delcros](http://www.jordan-delcros.com)
