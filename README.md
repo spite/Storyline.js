@@ -2,7 +2,7 @@
 
 **Storyline.js** is a library to help define a storyboard using natural language.
 
-[Check all the demos](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)
+[Check all the demos](http://jordandelcros.github.io/Storyline.js/)
 
 ### How to?
 
@@ -96,10 +96,10 @@ But you can also register your own easings:
 #### Type
 
 You can animate one or many values in each keys but you can also use types:
-int: only returns integers.
-bool: return true if the value is upper or equal to 1, else return false.
-vec2: return the values with `.x` and `.y` getters.
-vec3: return the values with `.x`, `.y` and `.z` getters.
+ - int: only returns integers.
+ - bool: return true if the value is upper or equal to 1, else return false.
+ - vec2: return the values with `.x` and `.y` getters.
+ - vec3: return the values with `.x`, `.y` and `.z` getters.
 
 But you can also register your own types:
 
@@ -173,7 +173,7 @@ But you can also register your own types:
    window.requestAnimationFrame(update);
 ```
 
-[Check all the demos/examples](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)
+[Check all the demos/examples](http://jordandelcros.github.io/Storyline.js/)
 
 #### License
 
