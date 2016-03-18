@@ -53,6 +53,30 @@
 					"0 cut to 0",
 					"1000 easeInOut to 1"
 				],
+				easeinelastic: [
+					"0 cut to 0",
+					"1000 easeInElastic to 1"
+				],
+				easeoutelastic: [
+					"0 cut to 0",
+					"1000 easeOutElastic to 1"
+				],
+				easeinoutelastic: [
+					"0 cut to 0",
+					"1000 easeInOutElastic to 1"
+				],
+				easeinbounce: [
+					"0 cut to 0",
+					"1000 easeInBounce to 1"
+				],
+				easeoutbounce: [
+					"0 cut to 0",
+					"1000 easeOutBounce to 1"
+				],
+				easeinoutbounce: [
+					"0 cut to 0",
+					"1000 easeInOutBounce to 1"
+				],
 				quadraticX: [
 					"0 cut to 0",
 					"1000 quadratic(0," + Math.random() + ",1) to 1"
@@ -77,6 +101,10 @@
 					"0 cut to bool(0)",
 					"500 linear to bool(1)",
 					"1000 linear to bool(2)"
+				],
+				color: [
+					"0 cut to color(0xFF0000)",
+					"1000 linear to color(0x00FF00)"
 				]
 			});
 
@@ -85,10 +113,17 @@
 			var easeinCurve = new CanvasCurve(200);			
 			var easeoutCurve = new CanvasCurve(200);			
 			var easeinoutCurve = new CanvasCurve(200);			
+			var easeinelasticCurve = new CanvasCurve(200);			
+			var easeoutelasticCurve = new CanvasCurve(200);			
+			var easeinoutelasticCurve = new CanvasCurve(200);			
+			var easeinbounceCurve = new CanvasCurve(200);			
+			var easeoutbounceCurve = new CanvasCurve(200);			
+			var easeinoutbounceCurve = new CanvasCurve(200);			
 			var quadraticCurve = new CanvasCurve(200);			
 			var cubicCurve = new CanvasCurve(200);
 			var vec3Curve = new CanvasCurve(200);
 			var boolCurve = new CanvasCurve(200);
+			var colorCurve = new CanvasCurve(200);
 
 			var delay = 0;
 			var now = 0;
@@ -118,6 +153,24 @@
 					var easeinout = storyline.get("easeinout", now);
 					easeinoutCurve.drawEasing(time, easeinout);
 
+					var easeinelastic = storyline.get("easeinelastic", now);
+					easeinelasticCurve.drawEasing(time, easeinelastic);
+
+					var easeoutelastic = storyline.get("easeoutelastic", now);
+					easeoutelasticCurve.drawEasing(time, easeoutelastic);
+
+					var easeinoutelastic = storyline.get("easeinoutelastic", now);
+					easeinoutelasticCurve.drawEasing(time, easeinoutelastic);
+
+					var easeinbounce = storyline.get("easeinbounce", now);
+					easeinbounceCurve.drawEasing(time, easeinbounce);
+
+					var easeoutbounce = storyline.get("easeoutbounce", now);
+					easeoutbounceCurve.drawEasing(time, easeoutbounce);
+
+					var easeinoutbounce = storyline.get("easeinoutbounce", now);
+					easeinoutbounceCurve.drawEasing(time, easeinoutbounce);
+
 					var quadraticX = storyline.get("quadraticX", now);
 					var quadraticY = storyline.get("quadraticY", now);
 					quadraticCurve.drawEasing(quadraticX, quadraticY);
@@ -131,6 +184,9 @@
 
 					var bool = storyline.get("bool", now);
 					boolCurve.drawEasing(time, linear, (bool ? "#0F0" : "#F00"));
+
+					var color = storyline.get("color", now);
+					colorCurve.drawColor(time, linear, color.hexString);
 
 				};
 
@@ -189,6 +245,18 @@
 
 				this.context.fillStyle = (colors[2] || "#FFF");
 				this.context.fillRect(t, z, 2, 2);
+
+			},
+			drawColor: function( time, value, color ){
+
+				var x = (time * this.size) - 1;
+				var y = this.size - (value * this.size) - 1;
+
+				this.context.fillStyle = (color || "#FFF");
+				this.context.fillRect(x, 0, 1, this.size);
+
+				this.context.fillStyle = "#FFF";
+				this.context.fillRect(x, y, 2, 2);
 
 			}
 		};

@@ -38,14 +38,26 @@
 					var easingOptions = (easing[2] != undefined ? easing[2].split(/\,/g) : null);
 
 					var type = Storyline.getType((story[key][step].match(/([a-z0-9]+)\([^\)]+\)$/) || "")[1]);
-					var extractedValue = story[key][step].match(/(?:(\-?\s*[0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0].match(/(\-?\s*[0-9]+\.?[0-9]*)/g);
-					var value = extractedValue.map(function( number ){
+					var extractedValue = story[key][step].match(/(?:(\-?\s*[0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0].match(/(\-?\s*(?:0x)?[0-9A-F]+\.?[0-9]*)/gi);
 
-						return parseFloat(number);
+					var values = null;
 
-					});
+					if( type != undefined && types[type] != undefined && types[type][2] != undefined ){
 
-					this.set(key, time, easingMode, easingOptions, value, type);
+						values = types[type][2](extractedValue);
+
+					}
+					else {
+
+						values = extractedValue.map(function( number ){
+
+							return parseFloat(number);
+
+						});
+
+					};
+
+					this.set(key, time, easingMode, easingOptions, values, type);
 
 				};
 
@@ -54,7 +66,7 @@
 			return this;
 
 		},
-		set: function( key, time, easing, options, value, type ){
+		set: function( key, time, easing, options, values, type ){
 
 			time *= this.timeScale;
 
@@ -66,7 +78,7 @@
 
 			};
 
-			this.storyboard[key].push([time, easing, options, value, type]);
+			this.storyboard[key].push([time, easing, options, values, type]);
 
 			this.storyboard[key].sort(function( before, after ){
 
@@ -134,9 +146,9 @@
 
 	Storyline.methods.initialize.prototype = Storyline.methods;
 
-	Storyline.registerType = function( name, typeFunction ){
+	Storyline.registerType = function( name, getFunction, setFunction ){
 
-		types.push([name, typeFunction]);
+		types.push([name, getFunction, setFunction]);
 
 	};
 
@@ -199,6 +211,52 @@
 
 	});
 
+	Storyline.registerType("color", function( options ){
+
+		options.r = options[0];
+		options.g = options[1];
+		options.b = options[2];
+		options.a = options[3];
+
+		options.hex = (options[0] * 255) << 16 ^ (options[1] * 255) << 8 ^ (options[2] * 255) << 0;
+		options.hexString = "#" + ("000000" + options.hex.toString(16)).slice(-6);
+
+		return options;
+
+	}, function( options ){
+
+		if( /^0x[0-9A-F]+/i.test(options[0]) == true ){
+
+			var hexadecimal = parseInt(options[0]);
+
+			options[0] = ((hexadecimal >> 16 & 255) / 255);
+			options[1] = ((hexadecimal >> 8 & 255) / 255);
+			options[2] = ((hexadecimal & 255) / 255);
+			options[3] = 1;
+
+		}
+		else if( options.length == 3 ){
+
+			options[3] = 1;
+
+		};
+
+		return options.map(function( number ){
+
+			number = parseFloat(number);
+
+			if( number > 1 ){
+
+				number /= 255;
+
+			};
+
+			return number;
+
+		});
+
+	});
+
 	Storyline.registerEasing = function( name, easingFunction ){
 
 		easings.push([name, easingFunction]);
@@ -256,6 +314,187 @@
 
 			return 0.5 * ((elapsed -= 2) * elapsed * elapsed + 2);
 
+		};
+
+	});
+
+	Storyline.registerEasing("easeInElastic", function( elapsed, duration, options ){
+
+		if( elapsed == 0 ){
+
+			return 0;
+
+		}
+		else if( (elapsed /= duration) == 1 ){
+
+			return 1;
+
+		}
+		else {
+
+			return -(1 * Math.pow(2, 10 * (elapsed -= 1)) * Math.sin((elapsed * duration - ((duration * 0.3) / (2 * Math.PI) * Math.asin(1))) * (2 * Math.PI) / (duration * 0.3)));
+
+		};
+
+	});
+
+	Storyline.registerEasing("easeOutElastic", function( elapsed, duration, options ){
+
+		if( elapsed == 0 ){
+
+			return 0;
+
+		}
+		else if( (elapsed /= duration) == 1 ){
+
+			return 1;
+
+		}
+		else {
+
+			return Math.pow(2, -10 * elapsed) * Math.sin((elapsed * duration - ((duration * 0.3) / (2 * Math.PI) * Math.asin(1))) * (2 * Math.PI) / (duration * 0.3)) + 1;
+
+		};
+
+	});
+
+	Storyline.registerEasing("easeInOutElastic", function( elapsed, duration, options ){
+
+		if( elapsed === 0){
+
+			return 0;
+
+		}
+		else if( (elapsed /= duration / 2) === 2 ){
+
+			return 1;
+
+		}
+		else {
+
+			var progress = (duration * (0.3 * 1.5));
+			var speed = ((duration * (0.3 * 1.5)) / (2 * Math.PI) * Math.asin(1));
+
+			if( elapsed < 1 ){
+
+				return -0.5 * (1 * Math.pow(2, 10 * (elapsed -= 1)) * Math.sin((elapsed * duration - ((duration * (0.3 * 1.5)) / (2 * Math.PI) * Math.asin(1))) * (2 * Math.PI) / (duration * (0.3 * 1.5))));
+
+			}
+			else {
+
+				return Math.pow(2, -10 * (elapsed -= 1)) * Math.sin((elapsed * duration - ((duration * (0.3 * 1.5)) / (2 * Math.PI) * Math.asin(1))) * (2 * Math.PI) / (duration * (0.3 * 1.5))) * 0.5 + 1;
+
+			};
+
+		};
+
+	});
+
+	Storyline.registerEasing("easeInBounce", function( elapsed, duration, options ){
+
+		elapsed = (duration - elapsed);
+
+		if( (elapsed /= duration) < (1 / 2.75) ){
+
+			return 1 - (1 * (7.5625 * elapsed * elapsed));
+
+		}
+		else if( elapsed < (2 / 2.75) ){
+
+			return 1 - (1 * (7.5625 * (elapsed -= (1.5 / 2.75)) * elapsed + 0.75));
+
+		}
+		else if( elapsed < (2.5 / 2.75) ){
+
+			return 1 - (1 * (7.5625 * (elapsed -= (2.25 / 2.75)) * elapsed + 0.9375));
+
+		}
+		else {
+
+			return 1 - (1 * (7.5625 * (elapsed -= (2.625 / 2.75)) * elapsed + 0.984375));
+
+		};
+
+	});
+
+	Storyline.registerEasing("easeOutBounce", function( elapsed, duration, options ){
+
+		if( (elapsed /= duration) < (1 / 2.75) ){
+
+			return (1 * (7.5625 * elapsed * elapsed));
+
+		}
+		else if( elapsed < (2 / 2.75) ){
+
+			return (1 * (7.5625 * (elapsed -= (1.5 / 2.75)) * elapsed + 0.75));
+
+		}
+		else if( elapsed < (2.5 / 2.75) ){
+
+			return (1 * (7.5625 * (elapsed -= (2.25 / 2.75)) * elapsed + 0.9375));
+
+		}
+		else {
+
+			return (1 * (7.5625 * (elapsed -= (2.625 / 2.75)) * elapsed + 0.984375));
+
+		};
+
+	});
+
+	Storyline.registerEasing("easeInOutBounce", function( elapsed, duration, options ){
+
+		if( elapsed < (duration / 2) ){
+
+			elapsed = (duration - (elapsed * 2));
+
+			if( (elapsed /= duration) < (1 / 2.75) ){
+
+				return ((1 - (1 * (7.5625 * elapsed * elapsed))) * 0.5);
+
+			}
+			else if( elapsed < (2 / 2.75) ){
+
+				return ((1 - (1 * (7.5625 * (elapsed -= (1.5 / 2.75)) * elapsed + 0.75))) * 0.5);
+
+			}
+			else if( elapsed < (2.5 / 2.75) ){
+
+				return ((1 - (1 * (7.5625 * (elapsed -= (2.25 / 2.75)) * elapsed + 0.9375))) * 0.5);
+
+			}
+			else {
+
+				return ((1 - (1 * (7.5625 * (elapsed -= (2.625 / 2.75)) * elapsed + 0.984375))) * 0.5);
+
+			};
+
+		}
+		else {
+
+			elapsed = ((elapsed * 2) - duration);
+
+			if( (elapsed /= duration) < (1 / 2.75) ){
+
+				return (1 * (7.5625 * elapsed * elapsed)) * 0.5 + 1 * 0.5;
+
+			}
+			else if( elapsed < (2 / 2.75) ){
+
+				return (1 * (7.5625 * (elapsed -= (1.5 / 2.75)) * elapsed + 0.75)) * 0.5 + 1 * 0.5;
+
+			}
+			else if( elapsed < (2.5 / 2.75) ){
+
+				return (1 * (7.5625 * (elapsed -= (2.25 / 2.75)) * elapsed + 0.9375)) * 0.5 + 1 * 0.5;
+
+			}
+			else {
+
+				return (1 * (7.5625 * (elapsed -= (2.625 / 2.75)) * elapsed + 0.984375)) * 0.5 + 1 * 0.5;
+
+			};
+			
 		};
 
 	});
