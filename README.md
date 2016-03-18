@@ -35,7 +35,6 @@ The Storyline class only come with two options :
     }
 ```
 
-
 #### Timing
 
 Each key times are in milliseconds.
@@ -66,7 +65,6 @@ Each time will be multiplied by the `timescale`.
     }, duration);
 ```
 
-
 #### Easing
 
 There is already some basic easings:
@@ -75,6 +73,12 @@ There is already some basic easings:
  - easeIn: ease in from the previous value to the key value.
  - easeOut: ease out from the previous value to the key value.
  - easeInOut: ease in and out from the previous value to the key value.
+ - easeInElastic: ease in elastic from the previous value to the key value.
+ - easeOutElastic: ease out elastic from the previous value to the key value.
+ - easeInOutElastic: ease in and out elastic from the previous value to the key value.
+ - easeInBounce: ease in bounce from the previous value to the key value.
+ - easeOutBounce: ease out bounce from the previous value to the key value.
+ - easeInOutBounce: ease in and out bounce from the previous value to the key value.
  - quadratic(from,c,to): get value along a qaudratic bezier curve (see [stackoverflow explainations](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)).
  - cubic(from,cx,cy,to): get value along a cubic bezier curve (see [stackoverflow explainations](http://stackoverflow.com/questions/5634460/quadratic-bezier-curve-calculate-point)).
 
@@ -92,7 +96,6 @@ But you can also register your own easings:
  - duration: normalized duration (always 1...)
  - options: array of values, only if the easing take options (parenthesis with parameters).
 
-
 #### Type
 
 You can animate one or many values in each keys but you can also use types:
@@ -100,6 +103,7 @@ You can animate one or many values in each keys but you can also use types:
  - bool: return true if the value is upper or equal to 1, else return false.
  - vec2: return the values with `.x` and `.y` getters.
  - vec3: return the values with `.x`, `.y` and `.z` getters.
+ - color: return the values with `.r`, `.g`, `.b`, `hex` and `hexString` getters.
 
 But you can also register your own types:
 
