@@ -38,13 +38,14 @@
 					var easingOptions = (easing[2] != undefined ? easing[2].split(/\,/g) : null);
 
 					var type = Storyline.getType((story[key][step].match(/([a-z0-9]+)\([^\)]+\)$/) || "")[1]);
-					var extractedValue = story[key][step].match(/(?:(\-?\s*[0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0].match(/(\-?\s*(?:0x)?[0-9A-F]+\.?[0-9]*)/gi);
+					var givenValue = story[key][step].match(/(?:(\-?\s*[0-9]+\.?[0-9]*)|\(([^\)]+)\))$/g)[0];
+					var extractedValue = givenValue.match(/(\-?\s*(?:(?:0x)[0-9A-F]+|[0-9]+)\.?[0-9]*)/gi);
 
 					var values = null;
 
 					if( type != undefined && types[type] != undefined && types[type][2] != undefined ){
 
-						values = types[type][2](extractedValue);
+						values = types[type][2](extractedValue, givenValue);
 
 					}
 					else {
@@ -121,7 +122,7 @@
 					}
 					else if( step == 0 ){
 
-						values = this.storyboard[key][step][KEY.VALUE];
+						values = this.storyboard[key][step][KEY.VALUE].slice(0);
 
 						break;
 
@@ -131,7 +132,7 @@
 
 				if( type != null ){
 
-					values = type[1](values);
+					values = type[1](values, this.storyboard[key][step][KEY.VALUE]);
 
 				};
 
@@ -168,7 +169,7 @@
 
 	};
 
-	Storyline.registerType("int", function( options ){
+	Storyline.registerType("int", function( options, originString ){
 
 		for( var option = 0, length = options.length; option < length; option++ ){
 
@@ -180,7 +181,7 @@
 
 	});
 
-	Storyline.registerType("bool", function( options ){
+	Storyline.registerType("bool", function( options, originString ){
 
 		for( var option = 0, length = options.length; option < length; option++ ){
 
@@ -192,7 +193,7 @@
 
 	});
 
-	Storyline.registerType("vec2", function( options ){
+	Storyline.registerType("vec2", function( options, originString ){
 
 		options.x = options[0];
 		options.y = options[1];
@@ -201,7 +202,7 @@
 
 	});
 
-	Storyline.registerType("vec3", function( options ){
+	Storyline.registerType("vec3", function( options, originString ){
 
 		options.x = options[0];
 		options.y = options[1];
@@ -211,7 +212,7 @@
 
 	});
 
-	Storyline.registerType("color", function( options ){
+	Storyline.registerType("color", function( options, originString ){
 
 		options.r = options[0];
 		options.g = options[1];
@@ -223,7 +224,7 @@
 
 		return options;
 
-	}, function( options ){
+	}, function( options, originOptions ){
 
 		if( /^0x[0-9A-F]+/i.test(options[0]) == true ){
 
