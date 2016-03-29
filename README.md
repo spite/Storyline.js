@@ -107,18 +107,25 @@ You can animate one or many values in each keys but you can also use types:
 
 But you can also register your own types:
 
+`Storyline.registerType(name, getter, setter)`
+
 ```javascript
-    Storyline.registerType("invert", function( options ){
+    Storyline.registerType("invert", function( options, originOptions ){
 
         for( var option = 0, length = options.length; option < length; option++ ){
 
-            options[option] = (options[option] * -1);
+            options[option] *= -1;
 
         };
 
         return options;
 
+    }, function( options, originString ){
+
+        return options;
+
     });
+
 ```
 
 ### Examples
