@@ -1,6 +1,6 @@
 {
   "name": "storyline.js",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "javascript animation sequencer",
   "main": "storyline.js",
   "scripts": {

@@ -31,7 +31,7 @@
 
 				for( var step in story[key] ){
 
-					var time = parseFloat(story[key][step].match(/^\s*([0-9]+\.?[0-9]*)/g)[0]);
+					var time = parseFloat(story[key][step].match(/^\s*(\-\s*)?([0-9]+\.?[0-9]*)/g)[0]);
 
 					var easing = story[key][step].match(/([a-z]+)(?:\((.*)\))?/i);
 					var easingMode = Storyline.getEasing(easing[1]);
