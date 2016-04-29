@@ -1,0 +1,27 @@
+{
+  "name": "storyline.js",
+  "version": "1.4.1",
+  "description": "javascript animation sequencer",
+  "main": "storyline.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JordanDelcros/Storyline.js.git"
+  },
+  "keywords": [
+    "javascript",
+    "animation",
+    "sequencer",
+    "scenario",
+    "story",
+    "frame"
+  ],
+  "author": "Jordan Delcros",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JordanDelcros/Storyline.js/issues"
+  },
+  "homepage": "https://github.com/JordanDelcros/Storyline.js#readme"
+}
