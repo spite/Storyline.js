@@ -95,14 +95,17 @@ function getPointInStoryline( storyline, t, value ) {
 
 	if( !storyline[ value ] ) return null;
 
+	var last = null;
+
 	for( var j = 0; j < storyline[ value ].length; j++ ) {
 		var e = storyline[ value ][ j ];
-		if( e.start <= t && e.end > t ) {
-			return e;
+		if( e.start <= t) {
+			last = e;
+			if ( e.end > t ) return e;
 		}
 	}
 
-	return null;
+	return last;
 
 }
 
